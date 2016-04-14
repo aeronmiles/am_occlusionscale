@@ -8,47 +8,6 @@
 #include <lxvmath.h>
 #include <lx_log.hpp>
 
-// Create a bbox visitor. https://community.thefoundry.co.uk/discussion/topic.aspx?f=37&t=84847&show=boundingbox
-//mesh.GetPoints(point);
-//if (!point.test())
-//{
-//	return LXe_OK;
-//}
-//GetObjectSpaceBB    BB(point, bb_min, bb_max);
-//point.Enum(&BB);
-class GetObjectSpaceBB : public CLxImpl_AbstractVisitor
-{
-public:
-	CLxUser_Point		&point;
-	LXtVector			&bbox_min;
-	LXtVector			&bbox_max;
-	LXtFVector			point_pos;
-	double				maxDouble = std::numeric_limits<double>::infinity();
-
-	GetObjectSpaceBB(CLxUser_Point &point_in, LXtVector &bbox_min_in, LXtVector &bbox_max_in) : point(point_in), bbox_min(bbox_min_in), bbox_max(bbox_max_in)
-	{
-		Clear();
-	}
-
-	LxResult Evaluate()    LXx_OVERRIDE
-	{
-		point.Pos(point_pos);
-		LXx_V3MIN(bbox_min, point_pos);
-		LXx_V3MAX(bbox_max, point_pos);
-		return LXe_OK;
-	}
-
-	LxResult Clear()
-	{
-		LXx_VSET(bbox_max, -maxDouble);
-		LXx_VSET(bbox_min, maxDouble);
-		LXx_VCLR(point_pos);
-		return LXe_OK;
-	}
-
-};
-
-
 class OcclusionScale : public CLxImpl_AbstractVisitor
 {
 private:

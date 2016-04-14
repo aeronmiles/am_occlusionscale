@@ -150,7 +150,7 @@ LxResult occlusionScale_cmd::cmd_Desc(const char **desc)
 	/*
 	This sets the command description in the commands list.
 	*/
-	desc[0] = "Matches the Position, Rotation and Scale of an item to another.";
+	desc[0] = "Iterate selected meshes and rescale meshes that occlude (bounding boxes) more than a threshold";
 	return LXe_OK;
 }
 
@@ -160,7 +160,7 @@ LxResult occlusionScale_cmd::cmd_ButtonName(const char **name)
 	This sets the default button name if the command is added
 	to a form.
 	*/
-	name[0] = "Item Transform";
+	name[0] = "Scale Occluding";
 	return LXe_OK;
 }
 
@@ -169,7 +169,7 @@ LxResult occlusionScale_cmd::cmd_UserName(const char **name)
 	/*
 	This defines a user friendly name for the command.
 	*/
-	name[0] = "Item Transform";
+	name[0] = "Scale Occluding";
 	return LXe_OK;
 }
 
