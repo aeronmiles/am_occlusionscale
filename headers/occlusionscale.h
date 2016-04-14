@@ -162,23 +162,3 @@ public:
 		return LXe_OK;
 	}
 };
-
-
-//for (unsigned j = 0; j < 4; j++) {
-//	for (unsigned k = 0; k < 4; k++) {
-//		bb[j][k] = scale_matrix4[j][k];
-//	}
-//}
-
-//bb[0][0] = bb_min_a[0];
-//bb[0][1] = bb_min_a[1];
-//bb[0][2] = bb_min_a[2];
-//bb[1][0] = bb_min_b[0];
-//bb[1][1] = bb_min_b[1];
-//bb[1][2] = bb_min_b[2];
-//bb[2][0] = bb_max_a[0];
-//bb[2][1] = bb_max_a[1];
-//bb[2][2] = bb_max_a[2];
-//bb[3][0] = bb_max_b[0];
-//bb[3][1] = bb_max_b[1];
-//bb[3][2] = bb_max_b[2];
