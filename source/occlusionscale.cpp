@@ -1,16 +1,6 @@
 /*
 
-matchXfrm.cpp
-
-Sample plugin to demonstrate a simple command that matches
-position, rotation and scale between multiple selected items.
-
-This command operates slightly differently to the built in
-match.position, rotation, scale commands. The built in commands
-will average out the transform if multiple items are selected,
-whereas we simply match all selected items to the last selected
-item. However, it could be modified to make it work like the
-internal commands.
+Modo command to iterate selected meshes and rescale meshes that occlude (bounding boxes) more than a threshold
 
 */
 
@@ -19,8 +9,6 @@ Include the required SDK header files.
 */
 
 #include <occlusionscale.h>
-
-//namespace am_occScale {
 
 /*
 Define the server names.
@@ -137,15 +125,12 @@ void occlusionScale_cmd::cmd_Execute(unsigned int flags)
 
 	float					occ;
 	LXtMatrix4				bb;
-	//OcclusionScale* occlusionScale = new OcclusionScale(maxOcclusion, iterations, scale, occ, bb);
 
 	OcclusionScale		occlusionScale(maxOcclusion, iterations, scale, occ, bb);
 	my_log.Message(LXe_INFO, "bb a min: %f %f %f %f", bb[0][0], bb[0][1], bb[0][2], bb[0][3]);
 	my_log.Message(LXe_INFO, "bb b min: %f %f %f %f", bb[1][0], bb[1][1], bb[1][2], bb[1][3]);
 	my_log.Message(LXe_INFO, "bb a max: %f %f %f %f", bb[2][0], bb[2][1], bb[2][2], bb[2][3]);
 	my_log.Message(LXe_INFO, "bb b max: %f %f %f %f", bb[3][0], bb[3][1], bb[3][2], bb[3][3]);
-
-	//delete occlusionScale;
 }
 
 LXtTagInfoDesc occlusionScale_cmd::descInfo[] =
@@ -201,20 +186,7 @@ void initialize()
 	srv->AddInterface(new CLxIfc_Command		<occlusionScale_cmd>);
 	srv->AddInterface(new CLxIfc_Attributes		<occlusionScale_cmd>);
 	srv->AddInterface(new CLxIfc_AttributesUI	<occlusionScale_cmd>);
-	// logging interface
 	srv->AddInterface(new CLxIfc_StaticDesc		<occlusionScale_cmd>);
 
 	thisModule.AddServer(OCCLUSIONSCALE_CMD, srv);
 }
-
-
-//}; // end namespace: am_occScale
-//void initialize() {
-//	am_occScale::initialize();
-//} 
-
-
-///// Other
-//#include <plugin_debug.h>
-//msg.SetMsg(str);
-//log_S.DebugOut(LXi_DBLOG_NORMAL, "testing: %d", bb.max[0]);

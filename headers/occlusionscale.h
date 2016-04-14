@@ -186,12 +186,6 @@ public:
 			scene.GetChannels(chan_read, LXs_ACTIONLAYER_EDIT);
 			if (chan_read.Object(item_loc, chan_index, mesh))
 			{
-				CLxUser_MeshFilter            mfilt;
-
-				if (chan_read.Object(item_loc, chan_index, mfilt) && mfilt.test() && mfilt.GetMesh(mesh) && mesh.test())
-				{
-					// mesh is your mesh item.
-				}
 				mesh.BoundingBox(LXiMARK_ANY, &bb);
 
 				chan_read.Object(item_loc, LXsICHAN_XFRMCORE_WORLDMATRIX, world_matrix);
