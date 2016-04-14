@@ -127,6 +127,7 @@ void occlusionScale_cmd::cmd_Execute(unsigned int flags)
 
 	OcclusionScale		occlusionScale(maxOcclusion, iterations, scale);
 
+	// Test code
 	/*my_log.Message(LXe_INFO, "bb a min: %f", occ);
 	my_log.Message(LXe_INFO, "bb a min: %f %f %f %f", bb[0][0], bb[0][1], bb[0][2], bb[0][3]);
 	my_log.Message(LXe_INFO, "bb b min: %f %f %f %f", bb[1][0], bb[1][1], bb[1][2], bb[1][3]);

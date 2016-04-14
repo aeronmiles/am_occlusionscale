@@ -25,8 +25,8 @@ private:
 	CLxUser_Item						item_loc;	
 	CLxUser_Locator						locator_loc;
 	CLxUser_Point						point;
-	CLxUser_Matrix			  			world_matrix;
-	LXtMatrix4							world_matrix4;
+	CLxUser_Matrix			  			local_matrix;
+	LXtMatrix4							local_matrix4;
 
 	LXtMatrix4							scale_matrix4;
 	CLxUser_Matrix						scale_matrix;
@@ -117,7 +117,6 @@ public:
 
 	LxResult bbXformed(unsigned &ind, LXtBBox &bb)
 	{
-		///* // Get mesh from item mesh channel https://community.thefoundry.co.uk/discussion/topic.aspx?mode=Post&f=37&t=79387&p=713613	
 		pkt = sel_svc.ByIndex(LXiSEL_ITEM, ind);
 		item_pkt.Item(pkt, item_loc);
 		item_loc.GetContext(scene);
@@ -128,11 +127,11 @@ public:
 			layer_scn.BaseMeshByIndex(ind, mesh);
 			mesh.BoundingBox(LXiMARK_ANY, &bb);
 
-			chan_read.Object(item_loc, LXsICHAN_XFRMCORE_LOCALMATRIX, world_matrix);
-			world_matrix.Get4(world_matrix4);
+			chan_read.Object(item_loc, LXsICHAN_XFRMCORE_LOCALMATRIX, local_matrix);
+			local_matrix.Get4(local_matrix4);
 
-			lx::Matrix4Multiply(bb.min, world_matrix4, bb.min);
-			lx::Matrix4Multiply(bb.max, world_matrix4, bb.max);
+			lx::Matrix4Multiply(bb.min, local_matrix4, bb.min);
+			lx::Matrix4Multiply(bb.max, local_matrix4, bb.max);
 		}
 		return LXe_OK;
 	}
@@ -143,6 +142,7 @@ public:
 	}
 };
 
+//Test code
 //bb[0][0] = bb_min_a[0];
 //bb[0][1] = bb_min_a[1];
 //bb[0][2] = bb_min_a[2];
