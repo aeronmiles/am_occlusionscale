@@ -14,7 +14,7 @@ Include the required SDK header files.
 Define the server names.
 */
 
-#define	OCCLUSIONSCALE_CMD	"items.os2"
+#define	OCCLUSIONSCALE_CMD	"items.occlusionScale"
 
 /*
 Define the functions and class for the items.occlusionScale command.
