@@ -52,12 +52,11 @@ public:
 			{
 				CheckOcclusion(ind, occlusion);				
 				if (occlusion > max_occlusion)
-				{					
+				{		
 					Rescale(ind, scale);
 				}
 			}
 		}
-		//occ = occlusion;
 	}
 
 	LxResult Rescale(unsigned &ind, double &scale)
@@ -70,22 +69,15 @@ public:
 		scene.SetChannels(chan_write, LXs_ACTIONLAYER_EDIT);
 
 		chan_read.Object(item_loc, LXsICHAN_XFRMCORE_LOCALMATRIX, scale_matrix);
-
 		scale_matrix.Get4(scale_matrix4);
+
 		scale_matrix4[0][0] *= scale;
 		scale_matrix4[1][1] *= scale;
 		scale_matrix4[2][2] *= scale;
 
 		item_pkt.Item(pkt, locator_loc);
-		if (locator_loc.SetScale(chan_read, chan_write, scale_matrix4, LXiLOCATOR_LOCAL, 0) != LXe_OK)
-		{
-			/*
-			For whatever reason, we weren't able to set the transforms.
-			I'm unsure of how best to handle this, for now, we'll return
-			an error and stop the command. But that's not ideal.
-			*/
-			//msg.SetCode(LXe_FAILED);
-		}
+		locator_loc.SetScale(chan_read, chan_write, scale_matrix4, LXiLOCATOR_LOCAL, 0);
+
 		return LXe_OK;
 	}
 	
@@ -121,8 +113,8 @@ public:
 		item_loc.GetContext(scene);
 		scene.GetChannels(chan_read, current_time);
 
-		if (LXx_OK(item_loc.ChannelLookup(LXsICHAN_MESH_MESH, &chan_index)))
-		{	
+		if (item_loc.ChannelLookup(LXsICHAN_MESH_MESH, &chan_index))
+		{
 			layer_scn.BaseMeshByIndex(ind, mesh);
 			mesh.BoundingBox(LXiMARK_ANY, &bb);
 
@@ -131,8 +123,13 @@ public:
 
 			lx::Matrix4Multiply(bb.min, local_matrix4, bb.min);
 			lx::Matrix4Multiply(bb.max, local_matrix4, bb.max);
+
+			return LXe_OK;
 		}
-		return LXe_OK;
+		else
+		{
+			return LXe_FAILED;
+		}
 	}
 
 	LxResult Evaluate()    LXx_OVERRIDE
