@@ -24,7 +24,6 @@ private:
 
 	CLxUser_Item						item_loc;	
 	CLxUser_Locator						locator_loc;
-	CLxUser_Point						point;
 	CLxUser_Matrix			  			local_matrix;
 	LXtMatrix4							local_matrix4;
 
