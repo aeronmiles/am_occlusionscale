@@ -1,12 +1,14 @@
 #include <lxidef.h>
-#include <lx_plugin.hpp>
 #include <lxu_command.hpp>
-#include <lx_command.hpp>
-#include <lx_locator.hpp>
+
+//occlusionscale.cpp
+#include <lx_plugin.hpp>
 #include <lx_stdDialog.hpp>
-#include <lxu_math.hpp>
-#include <lxvmath.h>
 #include <lx_log.hpp>
+
+//occlusionscale.h
+#include <lx_locator.hpp>
+#include <lxu_math.hpp>
 
 class OcclusionScale : public CLxImpl_AbstractVisitor
 {
