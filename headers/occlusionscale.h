@@ -9,11 +9,14 @@
 //occlusionscale.h
 #include <lx_locator.hpp>
 #include <lxu_math.hpp>
+#include <lx_layer.hpp>
 
 class OcclusionScale : public CLxImpl_AbstractVisitor
 {
 private:
 	CLxUser_SelectionService			sel_svc;	
+	CLxUser_LayerService				layer_svc;
+	CLxUser_LayerScan 					layer_scn;
 	int									sel_count = sel_svc.Count(LXiSEL_ITEM);
 	double								current_time = sel_svc.GetTime();
 	CLxUser_ItemPacketTranslation		item_pkt;
@@ -43,26 +46,23 @@ private:
 	float						 		occlusion = 0.0f;
 
 public:
-	OcclusionScale(double &max_occlusion, int &iterations, double &scale, float &occ, LXtMatrix4 &bb)
+	OcclusionScale(double &max_occlusion, int &iterations, double &scale)
 	{		
-		item_pkt.autoInit();		
+		item_pkt.autoInit();	
+		layer_svc.BeginScan(LXf_LAYERSCAN_ACTIVE, layer_scn);
 
-		//pkt_a = sel_svc.ByIndex(LXiSEL_ITEM, 0);
-		//item_pkt.Item(pkt_a, item_loc);
-		unsigned ind = 0;
-		CheckOcclusion(ind, occlusion, bb);
+		for (unsigned iter = 0; iter < iterations; iter++)
+		{
+			for (unsigned ind = 0; ind < sel_count; ind++)	
+			{
+				CheckOcclusion(ind, occlusion);				
+				if (occlusion > max_occlusion)
+				{					
+					Rescale(ind, scale);
+				}
+			}
+		}
 		//occ = occlusion;
-		//for (unsigned iter = 0; iter < iterations; iter++)
-		//{
-		//	for (unsigned ind = 0; ind < sel_count; ind++)
-		//	{
-		//		CheckOcclusion(ind, occlusion);
-		//		if (occlusion > max_occlusion)
-		//		{
-		//			Rescale(ind, scale);
-		//		}
-		//	}
-		//}
 	}
 
 	LxResult Rescale(unsigned &ind, double &scale)
@@ -94,18 +94,18 @@ public:
 		return LXe_OK;
 	}
 	
-	LxResult CheckOcclusion(unsigned &ind, float &occlusion, LXtMatrix4 &bb)
+	LxResult CheckOcclusion(unsigned &ind, float &occlusion)
 	{
 		pkt_a = sel_svc.ByIndex(LXiSEL_ITEM, ind);
 		item_pkt.Item(pkt_a, item_loc);
-		bbXformed(bb_min_a, bb_max_a);
+		bbXformed(ind, bb_min_a, bb_max_a);
 
 		occlusion = 0.0f;
-		for (int i = 0; i < sel_count; i++)
+		for (unsigned i = 0; i < sel_count; i++)
 		{
 			pkt_b = sel_svc.ByIndex(LXiSEL_ITEM, i);
 			item_pkt.Item(pkt_b, item_loc);
-			bbXformed(bb_min_b, bb_max_b);
+			bbXformed(i, bb_min_b, bb_max_b);
 
 			if (bb_min_b[0] > bb_min_a[0]
 				&& bb_min_b[1] > bb_min_a[1]
@@ -119,42 +119,26 @@ public:
 			}
 		}
 
-		bb[0][0] = bb_min_a[0];
-		bb[0][1] = bb_min_a[1];
-		bb[0][2] = bb_min_a[2];
-		bb[1][0] = bb_min_b[0];
-		bb[1][1] = bb_min_b[1];
-		bb[1][2] = bb_min_b[2];
-		bb[2][0] = bb_max_a[0];
-		bb[2][1] = bb_max_a[1];
-		bb[2][2] = bb_max_a[2];
-		bb[3][0] = bb_max_b[0];
-		bb[3][1] = bb_max_b[1];
-		bb[3][2] = bb_max_b[2];
-
 		occlusion /= sel_count;
 
 		return LXe_OK;
 	}
 
-	LxResult bbXformed(LXtVector &bb_min, LXtVector &bb_max)
+	LxResult bbXformed(unsigned &ind, LXtVector &bb_min, LXtVector &bb_max)
 	{
-		///* // Get mesh from item mesh channel https://community.thefoundry.co.uk/discussion/topic.aspx?mode=Post&f=37&t=79387&p=713613
-		//scene.SetChannels(chan_write, LXs_ACTIONLAYER_EDIT);
+		///* // Get mesh from item mesh channel https://community.thefoundry.co.uk/discussion/topic.aspx?mode=Post&f=37&t=79387&p=713613	
+		item_loc.GetContext(scene);
+		scene.GetChannels(chan_read, current_time);
 		if (LXx_OK(item_loc.ChannelLookup(LXsICHAN_MESH_MESH, &chan_index)))
-		{
-			item_loc.GetContext(scene);
-			scene.GetChannels(chan_read, LXs_ACTIONLAYER_EDIT);
-			if (chan_read.Object(item_loc, chan_index, mesh))
-			{
-				mesh.BoundingBox(LXiMARK_ANY, &bb);
+		{	
+			layer_scn.BaseMeshByIndex(ind, mesh);
+			mesh.BoundingBox(LXiMARK_ANY, &bb);
 
-				chan_read.Object(item_loc, LXsICHAN_XFRMCORE_WORLDMATRIX, world_matrix);
-				world_matrix.Get4(world_matrix4);
+			chan_read.Object(item_loc, LXsICHAN_XFRMCORE_LOCALMATRIX, world_matrix);
+			world_matrix.Get4(world_matrix4);
 
-				lx::Matrix4Multiply(bb_min, world_matrix4, bb.min);
-				lx::Matrix4Multiply(bb_max, world_matrix4, bb.max);
-			}
+			lx::Matrix4Multiply(bb_min, world_matrix4, bb.min);
+			lx::Matrix4Multiply(bb_max, world_matrix4, bb.max);
 		}
 		return LXe_OK;
 	}
@@ -164,3 +148,16 @@ public:
 		return LXe_OK;
 	}
 };
+
+//bb[0][0] = bb_min_a[0];
+//bb[0][1] = bb_min_a[1];
+//bb[0][2] = bb_min_a[2];
+//bb[1][0] = bb_min_b[0];
+//bb[1][1] = bb_min_b[1];
+//bb[1][2] = bb_min_b[2];
+//bb[2][0] = bb_max_a[0];
+//bb[2][1] = bb_max_a[1];
+//bb[2][2] = bb_max_a[2];
+//bb[3][0] = bb_max_b[0];
+//bb[3][1] = bb_max_b[1];
+//bb[3][2] = bb_max_b[2];
