@@ -17,11 +17,10 @@ private:
 	CLxUser_SelectionService			sel_svc;	
 	CLxUser_LayerService				layer_svc;
 	CLxUser_LayerScan 					layer_scn;
-	int									sel_count = sel_svc.Count(LXiSEL_ITEM);
+	unsigned							sel_count = sel_svc.Count(LXiSEL_ITEM);
 	double								current_time = sel_svc.GetTime();
 	CLxUser_ItemPacketTranslation		item_pkt;
-	void								*pkt_a;
-	void								*pkt_b;
+	void								*pkt;
 
 	CLxUser_Item						item_loc;	
 	CLxUser_Locator						locator_loc;
@@ -31,17 +30,14 @@ private:
 
 	LXtMatrix4							scale_matrix4;
 	CLxUser_Matrix						scale_matrix;
-	LXtVector							bb_min_a;
-	LXtVector							bb_max_a;
-	LXtVector							bb_min_b;
-	LXtVector							bb_max_b;
 
 	CLxUser_Scene						scene;
 	unsigned							chan_index;	
 	CLxUser_ChannelRead					chan_read;
 	CLxUser_ChannelWrite				chan_write;	
 	CLxUser_Mesh						mesh;
-	LXtBBox								bb;
+	LXtBBox								bb_a;
+	LXtBBox								bb_b;
 
 	float						 		occlusion = 0.0f;
 
@@ -51,7 +47,7 @@ public:
 		item_pkt.autoInit();	
 		layer_svc.BeginScan(LXf_LAYERSCAN_ACTIVE, layer_scn);
 
-		for (unsigned iter = 0; iter < iterations; iter++)
+		for (int iter = 0; iter < iterations; iter++)
 		{
 			for (unsigned ind = 0; ind < sel_count; ind++)	
 			{
@@ -67,8 +63,8 @@ public:
 
 	LxResult Rescale(unsigned &ind, double &scale)
 	{
-		pkt_a = sel_svc.ByIndex(LXiSEL_ITEM, ind);
-		item_pkt.Item(pkt_a, item_loc);
+		pkt = sel_svc.ByIndex(LXiSEL_ITEM, ind);
+		item_pkt.Item(pkt, item_loc);
 
 		item_loc.GetContext(scene);
 		scene.GetChannels(chan_read, current_time);
@@ -81,7 +77,7 @@ public:
 		scale_matrix4[1][1] *= scale;
 		scale_matrix4[2][2] *= scale;
 
-		item_pkt.Item(pkt_a, locator_loc);
+		item_pkt.Item(pkt, locator_loc);
 		if (locator_loc.SetScale(chan_read, chan_write, scale_matrix4, LXiLOCATOR_LOCAL, 0) != LXe_OK)
 		{
 			/*
@@ -96,23 +92,18 @@ public:
 	
 	LxResult CheckOcclusion(unsigned &ind, float &occlusion)
 	{
-		pkt_a = sel_svc.ByIndex(LXiSEL_ITEM, ind);
-		item_pkt.Item(pkt_a, item_loc);
-		bbXformed(ind, bb_min_a, bb_max_a);
+		bbXformed(ind, bb_a);
 
 		occlusion = 0.0f;
 		for (unsigned i = 0; i < sel_count; i++)
 		{
-			pkt_b = sel_svc.ByIndex(LXiSEL_ITEM, i);
-			item_pkt.Item(pkt_b, item_loc);
-			bbXformed(i, bb_min_b, bb_max_b);
-
-			if (bb_min_b[0] > bb_min_a[0]
-				&& bb_min_b[1] > bb_min_a[1]
-				&& bb_min_b[2] > bb_min_a[2]
-				&& bb_max_b[0] < bb_max_a[0]
-				&& bb_max_b[1] < bb_max_a[1]
-				&& bb_max_b[2] < bb_max_a[2]
+			bbXformed(i, bb_b);
+			if (bb_b.min[0] > bb_a.min[0]
+				&& bb_b.min[1] > bb_a.min[1]
+				&& bb_b.min[2] > bb_a.min[2]
+				&& bb_b.max[0] < bb_a.max[0]
+				&& bb_b.max[1] < bb_a.max[1]
+				&& bb_b.max[2] < bb_a.max[2]
 				)
 			{
 				occlusion += 1.0f;
@@ -124,11 +115,14 @@ public:
 		return LXe_OK;
 	}
 
-	LxResult bbXformed(unsigned &ind, LXtVector &bb_min, LXtVector &bb_max)
+	LxResult bbXformed(unsigned &ind, LXtBBox &bb)
 	{
 		///* // Get mesh from item mesh channel https://community.thefoundry.co.uk/discussion/topic.aspx?mode=Post&f=37&t=79387&p=713613	
+		pkt = sel_svc.ByIndex(LXiSEL_ITEM, ind);
+		item_pkt.Item(pkt, item_loc);
 		item_loc.GetContext(scene);
 		scene.GetChannels(chan_read, current_time);
+
 		if (LXx_OK(item_loc.ChannelLookup(LXsICHAN_MESH_MESH, &chan_index)))
 		{	
 			layer_scn.BaseMeshByIndex(ind, mesh);
@@ -137,8 +131,8 @@ public:
 			chan_read.Object(item_loc, LXsICHAN_XFRMCORE_LOCALMATRIX, world_matrix);
 			world_matrix.Get4(world_matrix4);
 
-			lx::Matrix4Multiply(bb_min, world_matrix4, bb.min);
-			lx::Matrix4Multiply(bb_max, world_matrix4, bb.max);
+			lx::Matrix4Multiply(bb.min, world_matrix4, bb.min);
+			lx::Matrix4Multiply(bb.max, world_matrix4, bb.max);
 		}
 		return LXe_OK;
 	}
@@ -152,9 +146,9 @@ public:
 //bb[0][0] = bb_min_a[0];
 //bb[0][1] = bb_min_a[1];
 //bb[0][2] = bb_min_a[2];
-//bb[1][0] = bb_min_b[0];
-//bb[1][1] = bb_min_b[1];
-//bb[1][2] = bb_min_b[2];
+//bb[1][0] = bb.min[0];
+//bb[1][1] = bb.min[1];
+//bb[1][2] = bb.min[2];
 //bb[2][0] = bb_max_a[0];
 //bb[2][1] = bb_max_a[1];
 //bb[2][2] = bb_max_a[2];

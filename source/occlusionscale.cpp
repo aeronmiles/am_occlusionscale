@@ -122,7 +122,6 @@ void occlusionScale_cmd::cmd_Execute(unsigned int flags)
 	attr_GetFlt(ARGi_OCCLUSION, &maxOcclusion);
 	attr_GetInt(ARGi_ITERATIONS, &iterations);
 	attr_GetFlt(ARGi_SCALE, &scale);
-
 	//float					occ;
 	//LXtMatrix4				bb;
 
