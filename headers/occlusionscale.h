@@ -46,14 +46,35 @@ public:
 		item_pkt.autoInit();	
 		layer_svc.BeginScan(LXf_LAYERSCAN_ACTIVE, layer_scn);
 
+		// Tests
+		//unsigned i= 0;
+		//bbXformed(i, bbA);
+		//i = 1;
+		//bbXformed(i, bbB);
+
 		for (int iter = 0; iter < iterations; iter++)
 		{
-			for (unsigned ind = 0; ind < sel_count; ind++)	
+			// check modulous of iteration and reverse operation if odd
+			if ((iter + 2) % 2 == 0)
 			{
-				CheckOcclusion(ind, occlusion);				
-				if (occlusion > max_occlusion)
-				{		
-					Rescale(ind, scale);
+				for (unsigned ind = 0; ind < sel_count; ind++)
+				{
+					CheckOcclusion(ind, occlusion);					
+					if (occlusion > max_occlusion)
+					{	
+						Rescale(ind, scale);
+					}
+				}
+			}
+			else 
+			{
+				for (unsigned ind = sel_count - 1; ind-- > 0; )
+				{
+					CheckOcclusion(ind, occlusion);
+					if (occlusion > max_occlusion)
+					{
+						Rescale(ind, scale);
+					}
 				}
 			}
 		}
@@ -68,17 +89,23 @@ public:
 		scene.GetChannels(chan_read, current_time);
 		scene.SetChannels(chan_write, LXs_ACTIONLAYER_EDIT);
 
-		chan_read.Object(item_loc, LXsICHAN_XFRMCORE_LOCALMATRIX, scale_matrix);
-		scale_matrix.Get4(scale_matrix4);
+		if (chan_read.Object(item_loc, LXsICHAN_XFRMCORE_LOCALMATRIX, scale_matrix))
+		{
+			scale_matrix.Get4(scale_matrix4);
 
-		scale_matrix4[0][0] *= scale;
-		scale_matrix4[1][1] *= scale;
-		scale_matrix4[2][2] *= scale;
+			scale_matrix4[0][0] *= scale;
+			scale_matrix4[1][1] *= scale;
+			scale_matrix4[2][2] *= scale;
 
-		item_pkt.Item(pkt, locator_loc);
-		locator_loc.SetScale(chan_read, chan_write, scale_matrix4, LXiLOCATOR_LOCAL, 0);
+			item_pkt.Item(pkt, locator_loc);
+			locator_loc.SetScale(chan_read, chan_write, scale_matrix4, LXiLOCATOR_LOCAL, 0);
 
-		return LXe_OK;
+			return LXe_OK;
+		}
+		else
+		{
+			return LXe_FAILED;
+		}
 	}
 	
 	LxResult CheckOcclusion(unsigned &ind, float &occlusion)
@@ -113,7 +140,7 @@ public:
 		item_loc.GetContext(scene);
 		scene.GetChannels(chan_read, current_time);
 
-		if (item_loc.ChannelLookup(LXsICHAN_MESH_MESH, &chan_index))
+		if (item_loc.ChannelLookup(LXsICHAN_MESH_MESH, &chan_index) == LXe_OK)
 		{
 			layer_scn.BaseMeshByIndex(ind, mesh);
 			mesh.BoundingBox(LXiMARK_ANY, &bb);

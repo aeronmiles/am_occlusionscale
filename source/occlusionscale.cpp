@@ -122,17 +122,20 @@ void occlusionScale_cmd::cmd_Execute(unsigned int flags)
 	attr_GetFlt(ARGi_OCCLUSION, &maxOcclusion);
 	attr_GetInt(ARGi_ITERATIONS, &iterations);
 	attr_GetFlt(ARGi_SCALE, &scale);
-	//float					occ;
-	//LXtMatrix4				bb;
+
+	// Test Var
+	//float						occ;
+	//LXtBBox					bbA;
+	//LXtBBox					bbB;
 
 	OcclusionScale		occlusionScale(maxOcclusion, iterations, scale);
 
-	// Test code
-	/*my_log.Message(LXe_INFO, "bb a min: %f", occ);
-	my_log.Message(LXe_INFO, "bb a min: %f %f %f %f", bb[0][0], bb[0][1], bb[0][2], bb[0][3]);
-	my_log.Message(LXe_INFO, "bb b min: %f %f %f %f", bb[1][0], bb[1][1], bb[1][2], bb[1][3]);
-	my_log.Message(LXe_INFO, "bb a max: %f %f %f %f", bb[2][0], bb[2][1], bb[2][2], bb[2][3]);
-	my_log.Message(LXe_INFO, "bb b max: %f %f %f %f", bb[3][0], bb[3][1], bb[3][2], bb[3][3]);*/
+	// Test Logs
+	/*my_log.Message(LXe_INFO, "occ: %f", occ);
+	my_log.Message(LXe_INFO, "bb a min: %f %f %f", bbA.min[0], bbA.min[1], bbA.min[2]);
+	my_log.Message(LXe_INFO, "bb b min: %f %f %f", bbB.min[0], bbB.min[1], bbB.min[2]);
+	my_log.Message(LXe_INFO, "bb a max: %f %f %f", bbA.max[0], bbA.max[1], bbA.max[2]);
+	my_log.Message(LXe_INFO, "bb b max: %f %f %f", bbB.max[0], bbB.max[1], bbB.max[2]);*/
 }
 
 LXtTagInfoDesc occlusionScale_cmd::descInfo[] =
